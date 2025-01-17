@@ -28,18 +28,37 @@ front end.
 I would love to see some SOP documentation on how LEOs and dispatchers interact, it would give us a good idea of what kind of information is
 important. I imagine we could get that from a police department?
 
-For backend right now, I'm starting with what Lambda will be hitting to show of the MVP.
+For backend DB right now, I'm starting with what Lambda will be hitting to show of the MVP.
 
-    # Vehicles - Should cover all the physical, legal, and criminal aspects of a vehicle, like license plates, VINs, ownership. These can point 
+    # Vehicles - Should cover all the physical, legal, and criminal aspects of a vehicle that would be relevant to dispatch, like license plates, VINs, ownership. These can point 
         to People as owners or who have been related to the car (took their info at a traffic stop as a passenger, was a witness to a hit and run,
         etc.)
-        Vehicles should also point to incidents they were involved in, whether they be traffic or criminal.
-    # Addresses
-    # Persons
-    # Incidents
-    # Warrents
+        Vehicles should have Incidents they were involved in, whether they be traffic or criminal.
+        Vehicles should have Person(s) as primary owners, users, something like that 
+    # Addresses - Should cover all geographical locations that are relevant to dispatch, right now it looks like a standard postal address but it should be explored more
+    # Persons - Should cover all the aspects of persons that would be relevant to dispatch, like personal info, criminal history, medical info, etc.
+    # Incidents - covers inciting events, probably the primary reason of a dispatch incident
+    #             should cover all the aspects of an incident that would be relevant to dispatch, like location, date and time, persons involved, etc.
+    # Warrents - Should cover all the aspects of a warrent that would be relevant to dispatch, like who its for, what its for, where its coming from, etc.
+    # Citations - Should cover all the aspects of a "ticket", like who its for, what its for, where its coming from, moving vs nonmoving, court appearance, written warning?, etc.
+    # Arrests - Should cover all the aspects of an arrest, like who its for, what its for, where its coming from, etc.
     # 
     # Maybe more?
+
+And then for the more front end stuff, 
+
+    # Users - Covers the people actually authenticated and authorized to utilize the dispatch system, with credentials and logs and all that
+    # Roles - Covers the different roles of users, stuff like:
+        # LEO
+        # Dispatcher
+        # Admin
+        # Fire
+        # EMS
+        # etc.
+
+    
+
+
 
 I'll want to look into Fire and EMS eventually, but I'm sticking to police stuff for now.
 
@@ -47,7 +66,7 @@ I'll want to look into Fire and EMS eventually, but I'm sticking to police stuff
 Eventually, I'll have to figure out authentication and authorization as we make a front end, and Django should have some systems for that. 
 That would look like a User() model, that has Dispatchers() and LEO()s and stuff. Django has some tools for that I have to learn.
 
-# Vehicle, needs VIN, descripton, augments maybe (spoilers, lights, decals), probably more?
+# Vehicle, needs VIN, descripton, augments maybe (spoilers, lights, decals), probably more? Insurance info
 '''
 class Vehicle(models.Model):
     # license_plate: Should make this a foreign key, and embed a function to check license plate validity (per state? county?)
@@ -56,12 +75,21 @@ class Vehicle(models.Model):
     owner_name = models.models.ForeignKey('Person', on_delete=models.CASCADE, related_name='vehicles')
     address = models.ForeignKey('Address', on_delete=models.SET_NULL, null=True, related_name='vehicles')  # Nullable if no address
     # vehicle_make, vehicle_model : Should standardize inputs (probably all inputs) using save() function eg. input- "Ford " " Focus" -> "FORD" "FOCUS"
-    vehicle_make = models.CharField(max_length=50)
-    vehicle_model = models.CharField(max_length=50)
+    make = models.CharField(max_length=50)
+    model = models.CharField(max_length=50)
+    year = models.IntegerField(null=True, blank=True)
+    color = models.CharField(max_length=20, blank=True, null=True)
+
+    '''
+    registration - might need to be a model with all pertinent registration information
+    '''
+    registration = models.CharField(max_length=20, blank=True, null=True)
     # is_stolen : Should point to a member of an Incident() maybe?
     is_stolen = models.BooleanField(default=False)
     # outstanding warrents: This probably should point to the owner's warrents:
     outstanding_warrants = models.TextField(blank=True, null=True)
+
+
 
     # Use save() to standardize the input before we create the object. We could add more members here besides make and model
 
@@ -77,8 +105,10 @@ class Vehicle(models.Model):
 
 '''
 # Address, should be owned by Persons, Vehicles, Incidents. Maybe modify this to have descriptions of locations if its incomplete
-#   (like "Red house next to Eastwood Park", "10 miles before Exit 28", "Southbound I-5 by Pebble Beach", something like that, or
+#   (like "Red house next to Eastwood Park", "10 miles before Exit 28", "Southbound emergency lane on I-5 by Pebble Beach", something like that, or
 #   maybe that should be its own model), or maybe point to nearest valid address
+
+# 
 '''
 class Address(models.Model):
     street = models.CharField(max_length=255, blank=True, null=True)  # e.g., "123 Elm St"
@@ -134,8 +164,6 @@ can cause clashes if that primary DB is updated with correct info. In that event
 that sounds really expensive and probably isn't possible, but I have no conception of how databases interact with each other. I really have no clue what happens there.\
 
 '''
-
-
 class Person(models.Model):
     
     # Identification
@@ -173,8 +201,9 @@ class Person(models.Model):
     drivers_license_donor = models.CharField(max_length=20, blank=True, null=True) # Organ donor status
 
     '''
-    passport, nationality - need to do research on info contained on a US passport, will need to be expanded. Probably needs to be its own model
-    as well. Will we have to create a model per nation, they all have their own rules.
+    passport, nationality - need to do research on info contained on a US passport, probably other passports as well. 
+    will need to be expanded. Probably needs to be its own model as well. Will we have to create a model per nation, 
+    they all have their own rules.
     '''
 
     passport_number = models.CharField(max_length=20, blank=True, null=True)
@@ -288,8 +317,6 @@ class Person(models.Model):
     '''
     incidents_associated = models.ManyToManyField('Incident', related_name='incidents_associated', blank=True)
 
-
-
     # Criminality
 
     has_active_warrants = models.BooleanField(default=False)
@@ -301,6 +328,20 @@ class Person(models.Model):
 
     has_criminal_history = models.BooleanField(default=False, null=True)
     criminal_history_primary = models.TextField(blank=True, null=True)
+
+# class Incident(models.Model):
+    
+
+
+
+
+
+
+
+
+
+
+
 
 '''
     A lot of the way I'm approaching this project is my superficial understanding of how dispatch work from firsthand experience (report to dispatch):
