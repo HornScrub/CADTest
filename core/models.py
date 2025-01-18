@@ -1,15 +1,26 @@
 from django.db import models
 
+# README:
 '''
-README:
     Everything in the " ''' ''' " block comments are notes, probably things we want to fix. The "#" block comments are descriptions. I'm putting
     notes above particular segments I know there is an issue, and I'm putting general fixes up on top. Theres not a good order to the notes yet,
     its a bit stream of conciousness. 
 
 '''
 
-
+# General To-Do
 '''
+
+- Implement Django Auth
+- - Create Roles and Perms
+- - Figure out how to authenticate/authorize with Lambda -> Lex, eventually Twilio?
+
+- Decide how to structure DB and baseline way to serve the DB (views)
+
+- Set up protected repo
+
+
+
 For API questions, I have to explore the best way to store and serve this info. Right now, I'm deciding between creating views to serve
 info thats API appropriate, like turning TextFields into JSON through a view, or if it would just be better to store the info as JSON to 
 make the views (and thus the endpoints) a lot easier to write. I'm opting for the former, makes the data more flexible? I think?
@@ -28,7 +39,10 @@ front end.
 I would love to see some SOP documentation on how LEOs and dispatchers interact, it would give us a good idea of what kind of information is
 important. I imagine we could get that from a police department?
 
-For backend DB right now, I'm starting with what Lambda will be hitting to show of the MVP.
+What should do the heavy lifting? Should Lambda parse through served data and do the heavy lifting, or should the DB do the heavy lifting and we create a ton of endpoints?
+Lambda sounds more scalable but also more expensive?
+
+For backend DB right now, I'm starting with what models would be important for Lambda to hit to show of the MVP.
 
     # Vehicles - Should cover all the physical, legal, and criminal aspects of a vehicle that would be relevant to dispatch, like license plates, VINs, ownership. These can point 
         to People as owners or who have been related to the car (took their info at a traffic stop as a passenger, was a witness to a hit and run,
@@ -57,24 +71,31 @@ And then for the more front end stuff,
         # etc.
 
     
-
-
-
 I'll want to look into Fire and EMS eventually, but I'm sticking to police stuff for now.
 
 
 Eventually, I'll have to figure out authentication and authorization as we make a front end, and Django should have some systems for that. 
-That would look like a User() model, that has Dispatchers() and LEO()s and stuff. Django has some tools for that I have to learn.
+That would look like a User() model, that has Dispatchers() and LEO()s and stuff. Django has some tools for that I have to learn. I'll steal
+the front end css/html from the old project.
+'''
 
+
+
+'''
 # Vehicle, needs VIN, descripton, augments maybe (spoilers, lights, decals), probably more? Insurance info
 '''
 class Vehicle(models.Model):
-    # license_plate: Should make this a foreign key, and embed a function to check license plate validity (per state? county?)
+    '''
+    license_plate: Should make license_plates a model probably, and embed a function to check license plate validity (per state? county?)
+    '''
     license_plate = models.CharField(max_length=10, unique=True) 
-    # owner_name: 
-    owner_name = models.models.ForeignKey('Person', on_delete=models.CASCADE, related_name='vehicles')
+    # owner: 
+    owner = models.models.ForeignKey('Person', on_delete=models.CASCADE, related_name='vehicles')
+    
     address = models.ForeignKey('Address', on_delete=models.SET_NULL, null=True, related_name='vehicles')  # Nullable if no address
-    # vehicle_make, vehicle_model : Should standardize inputs (probably all inputs) using save() function eg. input- "Ford " " Focus" -> "FORD" "FOCUS"
+    '''
+    vehicle_make, vehicle_model : Should standardize inputs (probably all inputs) using save() function eg. input- "Ford " " Focus" -> "FORD" "FOCUS"
+    '''
     make = models.CharField(max_length=50)
     model = models.CharField(max_length=50)
     year = models.IntegerField(null=True, blank=True)
@@ -91,7 +112,7 @@ class Vehicle(models.Model):
 
 
 
-    # Use save() to standardize the input before we create the object. We could add more members here besides make and model
+    # Use save() to standardize the input before we create the object in the db
 
     def save(self, *args, **kwargs):
         # Standardize fields
@@ -171,7 +192,12 @@ class Person(models.Model):
     middle_name = models.CharField(max_length=40, blank=True, null=True)  # could be null for individuals without middle names
     last_name = models.CharField(max_length=40)
     full_name = first_name + " " + middle_name + " " + last_name
+    '''
+    aliases - could be nicknames, previous legal names, should be expanded
+    '''
     aliases = models.TextField(blank=True, null=True)  # Comma-separated or JSON list
+    
+
 
     # Identification Numbers
     nationality = models.CharField(max_length=50, blank=True, null=True)
@@ -207,8 +233,7 @@ class Person(models.Model):
     '''
 
     passport_number = models.CharField(max_length=20, blank=True, null=True)
-    date_of_birth = models.DateField()
-
+    
     # Contact Information
 
     '''
@@ -241,12 +266,13 @@ class Person(models.Model):
     weight = models.IntegerField(blank=True, null=True)  # in kg
     eye_color = models.CharField(max_length=20, blank=True, null=True)
     '''
-    distinguishing_marks - catch all for tattoos, piercings, scars, burns, augmentations, etc., might need to be expanded 
+    distinguishing_features - catch all for tattoos, marks, piercings, scars, burns, augmentations, etc., could be expanded to include limbless, extreme height/size, stuff like that
     '''
-    has_distinguishing_marks = models.BooleanField(default=False)
-    distinguishing_marks = models.TextField(blank=True, null=True)
+    has_distinguishing_features = models.BooleanField(default=False)
+    distinguishing_features = models.TextField(blank=True, null=True)
 
     # Personal Information
+    date_of_birth = models.DateField()
     occupation = models.CharField(max_length=100, blank=True, null=True)
     employer = models.CharField(max_length=100, blank=True, null=True)
 
@@ -257,7 +283,8 @@ class Person(models.Model):
     employer_address = models.ForeignKey('Address', on_delete=models.SET_NULL, null=True, related_name='employer_address')
 
     '''
-    vehicles_owned - should be vehicles currently owned in their name, should make something for past vehicles owned
+    vehicles_owned - should be vehicles currently registered in their name, should make something for past vehicles owned. Theres
+    
     '''
 
     vehicles_owned = models.ManyToManyField('Vehicle', related_name='owners', blank=True)
