@@ -344,44 +344,10 @@ class Person(models.Model):
 
 
 '''
-    A lot of the way I'm approaching this project is my superficial understanding of how dispatch work from firsthand experience (report to dispatch):
-    
-    (I used to do Asset Protection and I was calling 911 a lot. The dispatcher would always be asking the same kinds of things, so I kinda figured out exactly what to say to minimize get
-    the information dispatch wanted in as lightweight a way as possible. For example, the conversation would go something like this:
-    - "911, what's your emergency?"
-    - "Hello, I'm calling from Nordstrom Asset Protection at the Irvine Spectrum. We currently have detained an individual for shoplifting, he is 
-    located in the Asset Protection office on the first floor of the building. He is restrained and cooperative.
-        (So what I sussed out over a lot of calls is that the dispatcher really wants to ASAP the location (Irvine Spectrum) and intensity of the situation, like if we are
-        grappling with the dude and its a big fight, or if the situation is basically over and we are just waiting for the cops to show up. I also found
-        they really don't need the address for something like "Nordstrom at the Irvine Spectrum", they either know right away the address for the Spectrum
-        since there are so many calls there, or they can look it up really fast without asking me).
-    
-    - "When did this happen?"
-    - "About 5 minutes ago."
-    - "What's the name of the individual?"
-    - "It says on his license his name is John Doe"
-        (I'm not sure if they really care whether thats the real name or not, but I'd always say I have the license in front of me, to support the info.
-        The responding officer validates the license when they arrive anyway, so I'm not sure its too important. I think they just want a name to call the suspect,
-        because sometimes the cops arrive even after I've given info to dispatch and they are supprised to learn the person's on parole or something.)
-    - "Any weapons present?"
-    - "We removed a pocket knife from him, its in the office."
-    - "What's his date of birth?"
-    - "January 1st, 2000"
-    - "What's his address?"
-    - "123 Main St, Irvine, CA 92612"
+A lot of the way I'm approaching this project is my superficial understanding of how dispatch work from firsthand experience (report to dispatch):
 
-    I think at this point they ask for my info as a contact, just my name and phone number. And they let me know they sent someone out. However long later,
-    could be 10 to 60 minutes later, PD would arrive, conduct their investigation on the subject as they do license check to dispatch using 10 codes and military phonetics [sometimes
-    subject wouldn't have a license, they would just provide their name, birthdate, home address], and PD would relay that to dispatch, who I guess would say whether that info was accurate
-    or not. If they couldn't ID the subject, they would have to take them back to the station to fingerprint them. Usually, if they could ID the subject, they would "arrest" them 
-    [to me arrest always implied taking them back to the station], write a ticket and release them. Priors or extenuating circumstances they might book them.
-    For me, the 2nd would usually take my license and info to record me as the arresting indivudual, I'd give them basic info like when the subject arrived to the store, when I established intent, 
-    when they arrived and I attempted the arrest [there were a lot of dotting i's and crossing t's I think for them to responsibly make an arrest, as well as for Asset Protection people to
-    responsibly detain people without putting the company in legal jeapordy.] I'd fill out some Irvine PD Public Person's Arrest form stating I was the guy who arrested them. Sometimes PD
-    would just listen, sometimes they would take notes. Once the subjects released, they might debrief with us or head out, where I assume they write a report in their vehicles.)
-    
-    I'm also only familiar with dispatch when it comes to a firefighter friend and an EMS friend I interogatted about their interactions with dispatch
+I'm also only familiar with dispatch when it comes to a firefighter friend and an EMS friend I interogatted about their interactions with dispatch
 
-    As the tool right now we are making is for non-emergency PD calls, I really want a source of how that works and what SOP are, what kind of info they need,
-    etc. I could lean on our team, but I'd also see if there was some resource I could look at.
-    '''
+As the tool right now we are making is for non-emergency PD calls, I really want a source of how that works and what SOP are, what kind of info they need,
+etc. I could lean on our team, but I'd also see if there was some resource I could look at.
+'''
