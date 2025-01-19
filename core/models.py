@@ -90,7 +90,7 @@ class Vehicle(models.Model):
     '''
     license_plate = models.CharField(max_length=10, unique=True) 
     # owner: 
-    owner = models.models.ForeignKey('Person', on_delete=models.CASCADE, related_name='vehicles')
+    owner = models.ForeignKey('Person', on_delete=models.CASCADE, null=True, default=None, related_name='vehicles')
     
     address = models.ForeignKey('Address', on_delete=models.SET_NULL, null=True, related_name='vehicles')  # Nullable if no address
     '''
@@ -191,7 +191,6 @@ class Person(models.Model):
     first_name = models.CharField(max_length=40)
     middle_name = models.CharField(max_length=40, blank=True, null=True)  # could be null for individuals without middle names
     last_name = models.CharField(max_length=40)
-    full_name = first_name + " " + middle_name + " " + last_name
     '''
     aliases - could be nicknames, previous legal names, should be expanded
     '''
@@ -208,7 +207,7 @@ class Person(models.Model):
     '''
 
     drivers_license_number = models.CharField(max_length=20, blank=True, null=True)
-    drivers_license_address = models.ForeignKey('Address', on_delete=models.SET_NULL, null=True, related_name='drivers_license_address') # Address stated on DL
+    drivers_license_address = models.ForeignKey('Address', on_delete=models.SET_NULL, null=True, related_name='license_holders') # Address stated on DL
     drivers_license_first_name = models.CharField(max_length=40, blank=True, null=True)
     drivers_license_middle_name = models.CharField(max_length=40, blank=True, null=True)
     drivers_license_last_name = models.CharField(max_length=40, blank=True, null=True)
@@ -222,7 +221,7 @@ class Person(models.Model):
     drivers_license_expiry_date = models.DateField(blank=True, null=True) # Expiration date of DL
     drivers_license_discriminator = models.CharField(max_length=20, blank=True, null=True) # Unique number that identifes driver's license from other documents
     drivers_license_class = models.CharField(max_length=20, blank=True, null=True)
-    drivers_license_end = models.DateField(blank=True, null=True) # Driver's license endorsements
+    drivers_license_end_date = models.DateField(blank=True, null=True) # Driver's license endorsements
     drivers_license_rstr = models.CharField(max_length=20, blank=True, null=True) # Driver's license restrictions
     drivers_license_donor = models.CharField(max_length=20, blank=True, null=True) # Organ donor status
 
@@ -254,7 +253,7 @@ class Person(models.Model):
     Address or doing something else.
     '''
 
-    home_address = models.ForeignKey('Address', on_delete=models.SET_NULL, null=True, related_name='residents')
+    home_address = models.ForeignKey('Address', on_delete=models.SET_NULL, null=True, related_name='home_residents')
     work_address = models.ForeignKey('Address', on_delete=models.SET_NULL, null=True, related_name='employees')
 
     # Physical Description
@@ -279,8 +278,8 @@ class Person(models.Model):
     '''
     employer_person - could be supervisor, could expand to coworkers, subordinates, etc.
     '''
-    employer_person = models.ForeignKey('Person', on_delete=models.SET_NULL, null=True, related_name='employer_person')
-    employer_address = models.ForeignKey('Address', on_delete=models.SET_NULL, null=True, related_name='employer_address')
+    employer_person = models.ForeignKey('Person', on_delete=models.SET_NULL, null=True, related_name='employee')
+    employer_address = models.ForeignKey('Address', on_delete=models.SET_NULL, null=True, related_name='employee_address')
 
     '''
     vehicles_owned - should be vehicles currently registered in their name, should make something for past vehicles owned. Theres
@@ -314,7 +313,7 @@ class Person(models.Model):
     #Associations
 
     ## Familial Relationships
-    family_of = models.ManyToManyField('Person', related_name='family', blank=True) # Should catch cousins, aunts/uncles, or maybe its redundant
+    family_of = models.ManyToManyField('Person', related_name='family_members', blank=True) # Should catch cousins, aunts/uncles, or maybe its redundant
     spouse_of = models.ManyToManyField('Person', related_name='spouses', blank=True)
     parent_of = models.ManyToManyField('Person', related_name='children', blank=True)
     sibling_of = models.ManyToManyField('Person', related_name='siblings', blank=True)
@@ -330,19 +329,19 @@ class Person(models.Model):
     '''
     group_member_of - Might want to include their social groups and functions, agnostic to criminality for now (could be criminal gang or benign club)
     '''
-    group_member_of = models.ManyToManyField('TextField', related_name='groups', blank=True)
+    # group_member_of = models.ManyToManyField('TextField', related_name='groups', blank=True)
 
     ## General Associations
     phone_number_associated = models.CharField(max_length=15, blank=True, null=True)
-    addresses_associated = models.ManyToManyField('Address', related_name='owners', blank=True)
-    vehicles_associated = models.ManyToManyField('Vehicle', related_name='associated_vehicles', blank=True)
-    persons_associated = models.ManyToManyField('Persons', related_name='associated_persons', blank=True)
+    addresses_associated = models.ManyToManyField('Address', related_name='associated_residents', blank=True)
+    vehicles_associated = models.ManyToManyField('Vehicle', related_name='associated_people', blank=True)
+    persons_associated = models.ManyToManyField('Person', related_name='associated_persons', blank=True)
 
     '''
     incidents_associated - I'd want this to represent incidents they aren't the primary subject of, eg. made the emergency call,
     gave testimony, that sort of thing
     '''
-    incidents_associated = models.ManyToManyField('Incident', related_name='incidents_associated', blank=True)
+    # incidents_associated = models.ManyToManyField('Incident', related_name='incidents_associated', blank=True)
 
     # Criminality
 
